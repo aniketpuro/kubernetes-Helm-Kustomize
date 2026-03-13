@@ -36,7 +36,51 @@ The workflow follows the GitOps pull-model:
 
 ## 🚀 Getting Started
 
+
 ### 1. Install ArgoCD on your Cluster
-```bash
+```
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
 kubectl create namespace argocd
-kubectl apply -n argocd -f [https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml](https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)
+helm install argocd argo/argo-cd --namespace argocd --version 7.7.0
+```
+
+### 2. Access ArgoCD Dashboard
+Port-forward the service to access the UI locally:
+
+```
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+
+### 3. Retrieve Credentials
+Get the initial admin password (decoded):
+
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+### 4. API Calls
+Once the GitOps pipeline syncs the application, you can interact with the Grade Submission API.
+
+Note: Windows users should use Git Bash for these commands.
+
+Here are commands that you can use to add grades to the Grade Submission API. **Windows Users should use Git Bash**.
+
+```bash
+curl -X POST http://localhost:<port>/grades \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Harry", "subject": "Defense Against Dark Arts", "score": 95}'
+
+curl -X POST http://localhost:<port>/grades \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Ron", "subject": "Charms", "score": 82}'
+
+curl -X POST http://localhost:<port>/grades \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Hermione", "subject": "Potions", "score": 98}'
+```
+
+To verify, you can get all grades with:
+```bash
+curl http://localhost:<port>/grades
+```
